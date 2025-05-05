@@ -77,10 +77,6 @@ def extract_location(text):
 
 
 
-
-
-
-
     # Additional Indian cities for better coverage
     major_indian_cities = {
         "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Ahmedabad", "Pune", "Surat", "Jaipur",
@@ -215,23 +211,31 @@ def extract_location(text):
 
 def extract_name(text):
     lines = text.strip().split('\n')
-    first_five_lines = [line.strip() for line in lines if line.strip()][:3]
+    first_five_lines = [line.strip() for line in lines if line.strip()][:5]  # Extended to first 5 lines
+
+    # Check for all caps name format first (common in resumes)
+    for line in first_five_lines:
+        if line.isupper() and len(line) > 3 and line not in COMMON_JOB_TITLES:
+            return line
 
     def is_valid_name(line):
         clean_line = line.strip()
         return clean_line and clean_line not in COMMON_JOB_TITLES
 
+    # Check for standard name format with capital letters
     for line in first_five_lines:
         if is_valid_name(line) and re.match(r'^([A-Z][a-z]+(?:\s[A-Z][a-z]+)+)$', line):
             return line
 
+    # Extended patterns for Indian names
     indian_name_patterns = [
         r'^([A-Z]\.\s?[A-Z][a-z]+)$',
         r'^([A-Z]{1,2}\s?[A-Z][a-z]+)$',
         r'^([A-Z][a-z]+\s?[A-Z]{1,2})$',
         r'^([A-Z][a-z]+\s[A-Z][a-z]+)$',
         r'^([A-Z][a-z]+\s[A-Z][a-z]+\s[A-Z][a-z]+)$',
-        r'^([A-Z]\.\s?[A-Z][a-z]+\s[A-Z][a-z]+)$'
+        r'^([A-Z]\.\s?[A-Z][a-z]+\s[A-Z][a-z]+)$',
+        r'^([A-Z]+)$',  # Added pattern for all-caps single names
     ]
 
     for line in first_five_lines:
@@ -241,6 +245,7 @@ def extract_name(text):
             if re.match(pattern, line):
                 return line
 
+    # If still no name found, check email
     email = extract_email(text)
     if email:
         name_part = email.split('@')[0]
@@ -346,8 +351,6 @@ def process_resumes(folder_path, output_folder):
 
 
 # --- Save to Excel ---
-
-
 def create_excel(data, output_file):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -379,8 +382,6 @@ def create_excel(data, output_file):
 
     wb.save(output_file)
     print(f"✅ Excel file created with increased cell sizes: {output_file}")
-
-
 
 
 # --- Main Function ---
