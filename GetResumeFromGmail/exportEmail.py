@@ -8,7 +8,7 @@ imap = imaplib.IMAP4_SSL("imap.gmail.com")
 
 # Login
 username = "jothivenkat.professional@gmail.com"
-password = ""  # Use Gmail app password
+password = "apgm mumi qgiq pysd"  # Use Gmail app password
 imap.login(username, password)
 
 # Select the inbox
